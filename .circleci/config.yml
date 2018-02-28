@@ -1,7 +1,11 @@
 version: 2
 jobs:
+    general:
+    artifacts:
+        -/Users/mac/test/app/build/outputs/apk/
   build:
     working_directory: ~/code
+  
     docker:
       - image: circleci/android:api-25-alpha
     environment:

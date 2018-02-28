@@ -39,7 +39,6 @@ jobs:
           - v1-dependencies-
 
       # Get private keys etc
-      - run: ./misc/download_keystore.sh
       - run: ./misc/inject_circle_build_number.sh
 
       - run: ./gradlew dependencies

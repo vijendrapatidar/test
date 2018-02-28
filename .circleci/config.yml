@@ -50,9 +50,6 @@ jobs:
       # build release
       - run: ./gradlew assembleRelease
 
-      # javadoc
-      - run: ./gradlew javadoc
-
       # trigger codecod.io
       - run: bash <(curl -s https://codecov.io/bash)
 
@@ -71,10 +68,6 @@ jobs:
       - store_artifacts:
           path: androidplot-core/build/reports/tests/
           destination: test_results
-
-      - store_artifacts:
-          path: androidplot-core/build/docs/javadoc
-          destination: javadoc
 
       - store_test_results:
           path: androidplot-core/build/test-results/

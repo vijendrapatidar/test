@@ -28,4 +28,4 @@ jobs:
           path: app/build/reports
           destination: reports
       - store_test_results:
-         - cp -r app/build/outputs $CIRCLE_ARTIFACTS
+         path: app/build/

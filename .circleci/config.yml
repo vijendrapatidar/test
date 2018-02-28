@@ -1,89 +1,31 @@
-# Java Gradle CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-java/ for more details
-#
 version: 2
-
-general:
-  branches:
-    only:
-      #- circleci
 jobs:
   build:
+    working_directory: ~/code
     docker:
-      # specify the version you desire here
-      #- image: circleci/openjdk:8-jdk
-
-      # CircleCI maintains a library of pre-built images
-            # documented at https://circleci.com/docs/2.0/circleci-images/
-      - image: circleci/android:api-26-alpha
-
-    working_directory: ~/repo
-
+      - image: circleci/android:api-25-alpha
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
-      TERM: dumb
-#      KEYSTORE: ${CIRCLE_WORKING_DIRECTORY}/sigining.keystore
-#      PUBLISHER_ACCT_JSON_FILE: ${CIRCLE_WORKING_DIRECTORY}/publisher_profile.json
-
+      -sudo ANDROID_HOME: /Users/mac/Library/Developer/Xamarin/android-sdk-macosx ./gradlew dependencies
     steps:
       - checkout
-      - run: echo 'export PUBLISHER_ACCT_JSON_FILE=${HOME}/repo/publisher_profile.json' >> $BASH_ENV
-
-      # Download and cache dependencies
       - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: ./gradlew dependencies
-
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+#      - run:
+#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this. 
+#         command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
       - save_cache:
           paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "build.gradle" }}
-
-      # run tests & code coc!
-      - run: ./gradlew test
-
-      # build release
-      - run: ./gradlew assembleRelease
-
-      # trigger codecod.io
-      - run: bash <(curl -s https://codecov.io/bash)
-
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: ./gradlew lint test
       - store_artifacts:
-          path: androidplot-core/build/outputs/aar/
-          destination: aar
-
-      - store_artifacts:
-          path: demoapp/build/outputs/apk/
-          destination: apk
-
-      - store_artifacts:
-          path: androidplot-core/build/reports/jacoco/debug/
-          destination: coverage_report
-
-      - store_artifacts:
-          path: androidplot-core/build/reports/tests/
-          destination: test_results
-
+          path: app/build/reports
+          destination: reports
       - store_test_results:
-          path: androidplot-core/build/test-results/
-
-      - deploy:
-          name: "Deploy to Bintray"
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ];
-              then ./gradlew bintrayUpload;
-            fi
-
-      - deploy:
-          name: "Deploy to Google Play"
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ];
-              then
-                ./misc/download_google_publisher_json.sh;
-                ./gradlew publishApkRelease
-            fi
+          path: app/build/test-results

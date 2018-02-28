@@ -2,7 +2,6 @@ version: 2
 jobs:
   build:
     working_directory: ~/code
-  
     docker:
       - image: circleci/android:api-25-alpha
     environment:
@@ -22,9 +21,11 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-       test:
-         override:
-        # start the build
-        - ./gradlew assembleDebug
-        # copy the build outputs to artifacts
-       - cp -r app/build/outputs/ $CIRCLE_ARTIFACTS
+      - run:
+          name: Run Tests
+          command: ./gradlew lint test
+      - store_artifacts:
+          path: app/build/reports
+          destination: reports
+      - store_test_results:
+          path: app/build/test-results
